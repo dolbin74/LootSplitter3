@@ -1,0 +1,248 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Dungeon Loot Splitter — calculate total loot, split treasure among party members, and manage loot items with quantity and value.">
+   <meta name="robots" content="index, follow">
+   <meta name="author" content="David Anna">
+   <meta name="theme-color" content="#ffffff">
+	
+
+    <!-- Page title -->
+    <title>Dungeon Loot Splitter</title>
+
+    <!-- External stylesheet (required: no inline CSS) -->
+    <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+<header>
+    <!-- Main heading for the app -->
+    <h1>Dungeon Loot Splitter</h1>
+</header>
+
+<main>
+
+    <!--
+         PARTY SETUP PANEL
+         Phase 2 requires a number input for party size.
+         Changing this input must automatically trigger updateUI().
+    -->
+    <section class="panel">
+        <h2>Party Setup</h2>
+
+        <label for="partySize">Number of Party Members:</label>
+        <!-- Required: type="number", min="1", step="1" -->
+        <input type="number" id="partySize" min="1" step="1">
+
+        <!-- Validation messages must appear on screen -->
+        <p id="partyError" class="error"></p>
+    </section>
+
+    <!-- 
+         ADD LOOT PANEL
+         Phase 2 requires name, value, and quantity fields.
+         All validation must happen before modifying the array.
+     -->
+    <section class="panel">
+        <h2>Add Loot</h2>
+
+        <label for="lootName">Loot Name:</label>
+        <input type="text" id="lootName">
+
+        <label for="lootValue">Loot Value:</label>
+        <input type="number" id="lootValue" min="0" step="0.01">
+
+        <label for="lootQty">Quantity:</label>
+        <input type="number" id="lootQty" min="1" step="1">
+
+        <!-- Add Loot button triggers addLoot() -->
+        <button id="addLootBtn">Add Loot</button>
+        
+         <!-- Reset button resets all data -->
+        <button id="resetBtn" class="reset-btn">Reset All</button>
+
+        <!-- Validation message for loot input -->
+        <p id="lootError" class="error"></p>
+    </section>
+
+    <!--
+         LOOT LIST PANEL
+         Phase 2 requires a structured grid layout (not a <ul>).
+         Must include:
+         - Name
+         - Value
+         - Quantity
+         - Remove button
+         Must also show an empty-state message.
+     -->
+    <section class="panel">
+        <h2>Loot List</h2>
+
+        <!-- Empty state message (shown when loot array is empty) -->
+        <div id="noLootMessage">No loot added.</div>
+
+        <!-- Required grid layout for loot table -->
+        <div class="loot-table">
+
+            <!-- Column headers -->
+            <div class="loot-header">Name</div>
+            <div class="loot-header">Value</div>
+            <div class="loot-header">Quantity</div>
+            <div class="loot-header">Remove</div>
+
+            <!-- Rows will be inserted here by updateUI() -->
+            <div id="lootRows"></div>
+        </div>
+
+        <!-- Total loot must always reflect state -->
+        <div class="total-row">
+            Total Loot: $<span id="totalLoot">0.00</span>
+        </div>
+    </section>
+
+    <!-- 
+         SPLIT LOOT PANEL
+         The Split button must NOT contain calculation logic.
+         It only calls handleSplit(), which uses state.
+         Results must be hidden until valid.
+    -->
+    <section class="panel">
+        <h2>Split Loot</h2>
+
+        <button id="splitLootBtn">Split Loot</button>
+
+        <!-- These results are hidden until loot exists -->
+        <p id="finalTotal" class="info hidden">Total Loot (after tax): $0.00</p>
+        <p id="perMember" class="info hidden">Loot Per Party Member: $0.00</p>
+
+        <!-- Validation message for split -->
+        <p id="splitError" class="error"></p>
+    </section>
+
+ 
+<!-- ========================= -->
+<!-- PHASE 3 REFLECTION PANEL (June 24, 2026) -->
+<!-- ========================= -->
+<section class="panel reflection">
+    <h2>Phase 3 Reflection Statement (June 24, 2026)</h2>
+
+    <h3>1. How state is saved and restored in the application</h3>
+    <p>
+        In my implementation, the lifecycle for adding loot follows the required sequence of 
+        <strong>Mutate → Save → updateUI()</strong>, which ensures that state remains the single 
+        source of truth and that rendering always reflects the latest data. When the user clicks 
+        the “Add Loot” button, the <code>addLoot()</code> function validates the inputs and then 
+        mutates the state by pushing a new object into the <code>loot</code> array:
+    </p>
+
+    <pre><code>loot.push({ name, value, quantity: qty });</code></pre>
+
+    <p>
+        Immediately after this mutation, Phase 3 requires that the updated state be persisted 
+        before any rendering occurs. I implemented this by calling <code>saveState()</code> 
+        directly after modifying the array:
+    </p>
+
+    <pre><code>saveState();
+updateUI();</code></pre>
+
+    <p>
+        This ordering is important because it guarantees that the saved state in localStorage 
+        always matches the in‑memory state before the UI is rebuilt. The fix was to ensure the 
+        correct lifecycle:
+    </p>
+
+    <pre><code>restoreState();
+updateUI();</code></pre>
+
+    <h3>2. Why updateUI() must be called after restoration</h3>
+    <p>
+        During page load, the system must restore state from localStorage before rendering 
+        anything. If <code>updateUI()</code> ran before <code>restoreState()</code>, the UI would 
+        render an empty loot list even when valid data existed in storage. This actually happened 
+        during early testing: I initially placed <code>updateUI()</code> above 
+        <code>restoreState()</code>, and the interface always showed “No loot added” until I 
+        manually added a new item.
+    </p>
+
+    <h3>3. What JSON.stringify() and JSON.parse() do conceptually</h3>
+    <p>
+        When I save my application state in Phase 3, I use <code>JSON.stringify()</code> and 
+        <code>JSON.parse()</code> to convert data back and forth between JavaScript objects and 
+        text stored in localStorage. Conceptually, these two functions act like a pair of 
+        translators that allow complex in‑memory structures—such as my <code>loot</code> array 
+        and <code>partySize</code> variable—to survive a page reload.
+    </p>
+
+    <h3>4. What I observed when stepping through the restoration process using breakpoints</h3>
+    <p>
+        During debugging, I set a breakpoint inside <code>saveState()</code> and stepped through 
+        the call stack to confirm that the function always executed before <code>updateUI()</code>. 
+        This revealed that the lifecycle was functioning correctly: the state object was written 
+        to localStorage before the UI attempted to read from the <code>loot</code> array.
+    </p>
+
+    <h3>5. How this phase supports one or more course outcomes</h3>
+    <p>
+        Phase 3 strengthened my understanding of application lifecycle, state authority, and 
+        validation discipline. By implementing persistence responsibly and maintaining 
+        architectural boundaries, the system now behaves predictably across reloads while 
+        preserving the clean, state‑driven design established in earlier phases.
+    </p>
+</section>
+
+
+<!-- ========================= -->
+<!-- PHASE 2 REFLECTION PANEL (June 21, 2026) -->
+<!-- ========================= -->
+<section class="panel reflection">
+    <h2>Phase 2 Logic Explanation (June 21, 2026)</h2>
+
+    <p><strong>How my loot array is the single source of truth:</strong></p>
+    <ul>
+        <li>The loot array holds every item the user adds, including its name, value, and quantity.</li>
+        <li>The interface never stores its own copy of the data. Instead, updateUI() always reads directly from the array.</li>
+        <li>Whenever the array changes—by adding or removing loot—the entire interface updates to match the new state.</li>
+    </ul>
+
+    <p><strong>How and why I added quantity to the data model:</strong></p>
+    <ul>
+        <li>Phase 2 requires total loot to be calculated as value × quantity.</li>
+        <li>Quantity allows the system to represent stacked items realistically (e.g., 3 keys or 5 bars).</li>
+        <li>By storing quantity inside each object, updateUI() can compute accurate totals from the array.</li>
+    </ul>
+
+    <p><strong>Where updateUI() performs calculations and rendering:</strong></p>
+    <ul>
+        <li>updateUI() recalculates the total loot every time the state changes.</li>
+        <li>It rebuilds the loot table by looping through the array and generating rows dynamically.</li>
+        <li>It also updates the Split button, empty‑state message, and visibility of results.</li>
+        <li>No other function is allowed to calculate totals or update the screen, preventing duplicate logic.</li>
+    </ul>
+
+    <p><strong>How state controls what is visible or enabled:</strong></p>
+    <ul>
+        <li>If the loot array is empty, updateUI() shows the “No loot added” message and hides the results.</li>
+        <li>If the party size is invalid, the Split button is disabled even if loot exists.</li>
+        <li>When both loot and party size are valid, the Split button automatically enables.</li>
+        <li>The interface always reflects the current state instead of reacting only to button clicks.</li>
+    </ul>
+
+    <p><strong>Where conditional logic prevents invalid state:</strong></p>
+    <ul>
+        <li>Before adding loot, the system checks that the name is not empty, the value is valid, and the quantity is at least 1.</li>
+        <li>Before splitting loot, the system checks that the party size is valid and that loot exists.</li>
+        <li>These checks prevent bad data from entering the array and ensure updateUI() always works with clean state.</li>
+    </ul>
+</section>
+
+
+</main>
+
+<!-- External JavaScript file (required: no inline JS) -->
+<script src="js/script.js"></script>
+
+</body>
+</html>
