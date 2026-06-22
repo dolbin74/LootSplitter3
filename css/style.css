@@ -1,0 +1,126 @@
+/* ---------------------------------------------------------
+   Global Styles
+---------------------------------------------------------- */
+
+* {
+    box-sizing: border-box;
+    font-family: Arial, sans-serif;
+}
+
+body {
+    margin: 0;
+    padding: 1rem;
+    background-color: #f5f5f5;
+}
+
+header {
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+/* ADA Improvement: darker border + light blue background */
+.panel {
+    background: #e8f2ff; /* light ADA-friendly blue */
+    padding: 1rem;
+    margin-bottom: 1rem;
+    border-radius: 6px;
+    border: 1px solid #888; /* improved contrast */
+}
+
+label {
+    display: block;
+    margin-top: 0.5rem;
+}
+
+input {
+    width: 100%;
+    padding: 0.4rem;
+    margin-top: 0.2rem;
+}
+
+button {
+    margin-top: 0.8rem;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    cursor: pointer;
+}
+
+/* ADA Improvement: darker red */
+.error {
+    color: #990000;
+    font-size: 0.9rem;
+}
+
+/* ADA Improvement: darker info text */
+.info {
+    font-size: 0.9rem;
+    color: #222;
+}
+
+.hidden {
+    display: none;
+}
+
+/* ---------------------------------------------------------
+   Loot Table (Phase 2 Required Structure)
+---------------------------------------------------------- */
+
+#lootRows {
+    display: contents;
+}
+
+.loot-table {
+    display: grid;
+    grid-template-columns: 3fr 1fr 1fr 1fr;
+    gap: 0.5rem;
+    align-items: center;
+    margin-top: 1rem;
+}
+
+.loot-header {
+    font-weight: bold;
+    border-bottom: 2px solid #ccc;
+    padding-bottom: 0.25rem;
+}
+
+.loot-row {
+    display: contents;
+}
+
+.loot-cell {
+    padding: 0.25rem 0;
+}
+
+.loot-cell button {
+    width: 100%;
+}
+
+/* ADA Improvement: higher contrast reset button */
+.reset-btn {
+    background-color: #ddd;
+    border: 1px solid #666;
+    color: #222;
+    margin-top: 1rem;
+}
+
+.reset-btn:hover {
+    background-color: #ccc;
+}
+
+.total-row {
+    margin-top: 1rem;
+    font-weight: bold;
+}
+
+/* ---------------------------------------------------------
+   Responsive Layout (≥768px)
+---------------------------------------------------------- */
+
+@media (min-width: 768px) {
+    main {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 1rem;
+    }
+
+    header {
